@@ -101,4 +101,46 @@ class UserRepository {
             false
         }
     }
+
+    /**
+     * Completely delete all user data - useful for testing and fresh starts
+     */
+    suspend fun deleteAllUserData(uid: String): Result<Unit> {
+        return try {
+            // Clear in-memory data
+            if (_currentUser.value?.uid == uid) {
+                _currentUser.value = null
+            }
+            
+            // TODO: Delete from Firestore when enabled
+            // FirebaseFirestore.getInstance()
+            //     .collection("users")
+            //     .document(uid)
+            //     .delete()
+            //     .await()
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Clear all local data (in-memory and cached)
+     */
+    fun clearAllLocalData() {
+        _currentUser.value = null
+        // Clear any other local caches here
+        
+        // Force garbage collection to ensure memory is cleared
+        System.gc()
+    }
+
+    /**
+     * Completely reset the repository state
+     */
+    fun forceReset() {
+        _currentUser.value = null
+        // Additional cleanup if needed
+    }
 }

@@ -24,7 +24,8 @@ import com.example.sih.data.models.UserProfile
 fun DashboardScreen(
     user: User,
     onLogoutClick: () -> Unit,
-    onStartFitnessTest: (FitnessTest) -> Unit
+    onStartFitnessTest: (FitnessTest) -> Unit,
+    onClearUserData: () -> Unit = {} // Add callback for clearing data
 ) {
     LazyColumn(
         modifier = Modifier
@@ -46,12 +47,29 @@ fun DashboardScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
                 
-                IconButton(onClick = onLogoutClick) {
-                    Icon(
-                        Icons.Default.ExitToApp,
-                        contentDescription = "Logout",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Row {
+                    // Clear Data Button (for testing)
+                    IconButton(
+                        onClick = onClearUserData,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "🗑️ Clear All Data - Click to remove all user information",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    
+                    // Logout Button
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = "Logout",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }

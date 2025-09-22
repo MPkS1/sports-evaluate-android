@@ -156,6 +156,14 @@ fun SportsEvaluateNavigation(
                     },
                     onStartFitnessTest = { test ->
                         dashboardViewModel.startFitnessTest(test)
+                    },
+                    onClearUserData = {
+                        authViewModel.forceDataReset()
+                        dashboardViewModel.clearUser()
+                        // Navigate back to profile setup for fresh registration
+                        navController.navigate(Screen.ProfileSetup.route) {
+                            popUpTo(Screen.Dashboard.route) { inclusive = true }
+                        }
                     }
                 )
             } ?: run {

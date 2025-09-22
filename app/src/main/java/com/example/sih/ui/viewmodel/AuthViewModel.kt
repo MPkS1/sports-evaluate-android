@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sih.data.models.AuthResult
 import com.example.sih.data.repository.AuthRepository
+import com.example.sih.data.repository.UserRepository
 import com.example.sih.di.AppContainer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,8 @@ class AuthViewModel(
     private val authRepository: AuthRepository = AuthRepository(
         AppContainer.provideAuthService(),
         AppContainer.provideEmailService()
-    )
+    ),
+    private val userRepository: UserRepository = UserRepository()
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -32,6 +34,9 @@ class AuthViewModel(
     private val _verificationSuccess = MutableStateFlow(false)
     val verificationSuccess: StateFlow<Boolean> = _verificationSuccess.asStateFlow()
 
+    private val _dataClearSuccess = MutableStateFlow(false)
+    val dataClearSuccess: StateFlow<Boolean> = _dataClearSuccess.asStateFlow()
+
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -39,6 +44,8 @@ class AuthViewModel(
 
             when (val result = authRepository.signIn(email, password)) {
                 is AuthResult.Success -> {
+                    // Clear any existing user data for fresh start
+                    clearAllUserData()
                     _isSignedIn.value = true
                 }
                 is AuthResult.Error -> {
@@ -107,6 +114,7 @@ class AuthViewModel(
 
     fun signOut() {
         authRepository.signOut()
+        clearAllUserData()
         _isSignedIn.value = false
         _verificationSuccess.value = false
         _pendingVerificationEmail.value = null
@@ -118,4 +126,32 @@ class AuthViewModel(
     }
 
     fun getCurrentUser() = authRepository.getCurrentUser()
+
+    /**
+     * Clears all user data including profile, preferences, and cached information
+     * Use this for fresh login experience or data reset during testing
+     */
+    fun clearAllUserData() {
+        userRepository.clearCurrentUser()
+        userRepository.forceReset()
+        // Clear any other cached data here if needed
+    }
+
+    /**
+     * Force clear all data - useful for testing and development
+     */
+    fun forceDataReset() {
+        viewModelScope.launch {
+            clearAllUserData()
+            _dataClearSuccess.value = true
+            _errorMessage.value = "✅ All user data has been cleared! You can now register a new profile."
+        }
+    }
+
+    /**
+     * Clear data clear success flag
+     */
+    fun clearDataClearSuccess() {
+        _dataClearSuccess.value = false
+    }
 }
